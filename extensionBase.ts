@@ -470,21 +470,30 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     toggleExtension(configuration.disableExtension, compositionState);
   });
 
-  for (const boundKey of configuration.boundKeyCombinations) {
-    const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
-      ? async () => {
-          const mh = await getAndUpdateModeHandler();
-          if (mh && !(await forceStopRecursiveRemap(mh))) {
-            await mh.handleKeyEvent(`${boundKey.key}`);
+  // bind keys to their commands
+  {
+    const keyBindings = configuration.boundKeyCombinations;
+    for (const boundKey of keyBindings) {
+      if (boundKey.key === '<S-Esc>') {
+        continue;
+      }
+
+      const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
+        ? async () => {
+            const mh = await getAndUpdateModeHandler();
+            if (mh && !(await forceStopRecursiveRemap(mh))) {
+              await mh.handleKeyEvent(`${boundKey.key}`);
+            }
           }
-        }
-      : async () => {
-          const mh = await getAndUpdateModeHandler();
-          if (mh) {
-            await mh.handleKeyEvent(`${boundKey.key}`);
-          }
-        };
-    registerCommand(context, boundKey.command, command);
+        : async () => {
+            const mh = await getAndUpdateModeHandler();
+            if (mh) {
+              await mh.handleKeyEvent(`${boundKey.key}`);
+            }
+          };
+
+      registerCommand(context, boundKey.command, command);
+    }
   }
 
   {

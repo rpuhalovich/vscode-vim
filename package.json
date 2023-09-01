@@ -65,6 +65,11 @@
     ],
     "keybindings": [
       {
+        "key": "Shift+Escape",
+        "command": "extension.vim_escape",
+        "when": "editorTextFocus && vim.active && !inDebugRepl"
+      },
+      {
         "key": "Escape",
         "command": "extension.vim_escape",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
