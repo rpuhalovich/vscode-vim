@@ -60,6 +60,23 @@ abstract class MoveByScreenLine extends BaseMovement {
     vimState: VimState,
     count: number,
   ): Promise<Position | IMovement> {
+    const curline: number = position.line;
+
+    await vscode.commands.executeCommand('cursorMove', {
+      to: this.movementType,
+      select: vimState.currentMode !== Mode.Normal,
+      by: this.by,
+      value: this.value * count,
+    });
+
+    const respos: Position = vscode.window.activeTextEditor?.selection.active ?? position;
+
+    if (respos.line === curline) {
+      return respos;
+    } else {
+      return respos.with({ character: vimState.desiredColumn });
+    }
+
     const multicursorIndex = this.multicursorIndex ?? 0;
 
     if (multicursorIndex === 0) {
@@ -79,6 +96,9 @@ abstract class MoveByScreenLine extends BaseMovement {
           }
         });
       }
+
+      // const editor = vscode.window.activeTextEditor?.document.lineAt(position).text.length;
+      // console.log(editor);
 
       // When we have multicursors and run a 'cursorMove' command, vscode applies that command
       // to all cursors at the same time. So we should only run it once.
@@ -1110,7 +1130,7 @@ class MoveScreenLineCenter extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveUpByDisplayLine extends MoveByScreenLine {
+class MoveUpByDisplayLine extends MoveByScreenLineMaintainDesiredColumn {
   override modes = [Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'k'],
@@ -1122,7 +1142,7 @@ class MoveUpByDisplayLine extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveDownByDisplayLine extends MoveByScreenLine {
+class MoveDownByDisplayLine extends MoveByScreenLineMaintainDesiredColumn {
   override modes = [Mode.Normal, Mode.Visual];
   keys = [
     ['g', 'j'],
