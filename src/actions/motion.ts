@@ -60,8 +60,6 @@ abstract class MoveByScreenLine extends BaseMovement {
     vimState: VimState,
     count: number,
   ): Promise<Position | IMovement> {
-    const curline: number = position.line;
-
     await vscode.commands.executeCommand('cursorMove', {
       to: this.movementType,
       select: vimState.currentMode !== Mode.Normal,
@@ -70,8 +68,7 @@ abstract class MoveByScreenLine extends BaseMovement {
     });
 
     const respos: Position = vscode.window.activeTextEditor?.selection.active ?? position;
-
-    if (respos.line === curline) {
+    if (respos.character > vimState.desiredColumn) {
       return respos;
     } else {
       return respos.with({ character: vimState.desiredColumn });
